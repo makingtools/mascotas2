@@ -1,134 +1,147 @@
-# ========================================================================
-# Script Definitivo para Desplegar un Proyecto Vite en GitHub Pages
-# Versión Mejorada: Más robusta, clara y confiable.
-# ========================================================================
+# ===================================================================
+# Script para Desplegar un Proyecto Vite en GitHub Pages
+# Versión: Limpia para evitar errores de sintaxis
+# ===================================================================
 
-# --- CONFIGURACIÓN INICIAL ---
-$projectPath = "C:\Users\Administrador\Desktop\mascotas"
+# --- CONFIGURACIÓN Y BIENVENIDA ---
+# El script asume que lo estás ejecutando desde la raíz de tu proyecto Vite.
+$projectPath = Get-Location
 
-# --- PASO 0: VERIFICACIÓN DE HERRAMIENTAS INDISPENSABLES ---
-Write-Host "[Paso 0/7] Verificando que 'git' y 'gh' (GitHub CLI) estén instalados..." -ForegroundColor Cyan
-
-$gitCheck = Get-Command git -ErrorAction SilentlyContinue
-$ghCheck = Get-Command gh -ErrorAction SilentlyContinue
-
-if (-not $gitCheck) {
-    Write-Host "ERROR: Git no está instalado o no se encuentra en el PATH." -ForegroundColor Red
-    Write-Host "Por favor, instala Git desde https://git-scm.com/ y vuelve a intentarlo." -ForegroundColor Yellow
-    exit
-}
-
-if (-not $ghCheck) {
-    Write-Host "ERROR: GitHub CLI (gh) no está instalado o no se encuentra en el PATH." -ForegroundColor Red
-    Write-Host "Por favor, instala GitHub CLI desde https://cli.github.com/ y autentícate con 'gh auth login'." -ForegroundColor Yellow
-    exit
-}
-
-Write-Host "¡Herramientas verificadas correctamente!" -ForegroundColor Green
-
+Write-Host "=======================================================" -ForegroundColor Green
+Write-Host "  Asistente de Despliegue de Vite en GitHub Pages"
+Write-Host "======================================================="
+Write-Host "Este script preparará y desplegará tu proyecto." -ForegroundColor Yellow
+Write-Host "Asegúrate de ejecutarlo desde la carpeta raíz de tu proyecto."
+Write-Host "Ubicación actual detectada: '$($projectPath.Path)'" -ForegroundColor Cyan
 
 # --- Pide la información necesaria al usuario ---
-Write-Host "`nEste script desplegará tu proyecto Vite en GitHub Pages." -ForegroundColor Yellow
-$githubUser = Read-Host "Paso A: Ingresa tu nombre de usuario de GitHub"
-$repoName = Read-Host "Paso B: Ingresa el nombre para tu nuevo repositorio (ej. mi-app-vite)"
+$githubUser = Read-Host "`nPor favor, ingresa tu nombre de usuario de GitHub"
+$repoName = Read-Host "Ingresa el nombre para tu nuevo repositorio en GitHub (ej. mi-proyecto-vite)"
 
+# --- PASO 1: VERIFICACIÓN DE PREREQUISITOS ---
+Write-Host "`n[Paso 1/7] Verificando prerequisitos..." -ForegroundColor Cyan
 
-# --- PASO 1: NAVEGACIÓN Y SEGURIDAD ---
-Write-Host "`n[Paso 1/7] Navegando al proyecto y configurando .gitignore..." -ForegroundColor Cyan
-try {
-    cd $projectPath
-    Write-Host "Ubicado en: $projectPath" -ForegroundColor Green
+# Función para verificar si un comando existe
+function Test-CommandExists {
+    param($command)
+    return (Get-Command $command -ErrorAction SilentlyContinue)
 }
-catch {
-    Write-Host "ERROR: La ruta del proyecto '$projectPath' no existe. Actualiza la variable e inténtalo de nuevo." -ForegroundColor Red
+
+if (-not (Test-CommandExists "git")) {
+    Write-Host "Error: Git no está instalado o no se encuentra en el PATH. Por favor, instálalo para continuar." -ForegroundColor Red
     exit
 }
+if (-not (Test-CommandExists "npm")) {
+    Write-Host "Error: Node.js y npm no están instalados o no se encuentran en el PATH. Por favor, instálalos para continuar." -ForegroundColor Red
+    exit
+}
+Write-Host "✓ Prerequisitos (git, npm) encontrados." -ForegroundColor Green
 
-# Configuración de .gitignore
-$gitignorePath = ".gitignore"
-if (-not (Test-Path $gitignorePath)) { New-Item $gitignorePath | Out-Null }
+
+# --- PASO 2: CONFIGURACIÓN DE .gitignore ---
+Write-Host "`n[Paso 2/7] Verificando y configurando .gitignore..." -ForegroundColor Cyan
+
+$gitignorePath = Join-Path $projectPath ".gitignore"
+if (-not (Test-Path $gitignorePath)) {
+    Write-Host "Creando archivo .gitignore..." -ForegroundColor Yellow
+    New-Item ".gitignore" | Out-Null
+}
+
 $gitignoreContent = Get-Content $gitignorePath
-if (-not ($gitignoreContent | Select-String -Pattern "^/dist" -Quiet)) { Add-Content $gitignorePath "`n# Build output`n/dist" }
-if (-not ($gitignoreContent | Select-String -Pattern "^/node_modules" -Quiet)) { Add-Content $gitignorePath "`n# Dependencies`n/node_modules" }
-if (-not ($gitignoreContent | Select-String -Pattern "^\.env" -Quiet)) { Add-Content $gitignorePath "`n# Environment variables`n.env*`n!.env.example" }
-
-
-# --- PASO 2: INSTALACIÓN DE DEPENDENCIAS ---
-Write-Host "`n[Paso 2/7] Instalando dependencias (npm install)..." -ForegroundColor Cyan
-npm install
-Write-Host "`n[Paso 3/7] Instalando 'gh-pages' para el despliegue..." -ForegroundColor Cyan
-npm install gh-pages --save-dev
-
-
-# --- PASO 4: CONFIGURACIÓN DE ARCHIVOS DEL PROYECTO ---
-Write-Host "`n[Paso 4/7] Configurando 'vite.config.ts' y 'package.json'..." -ForegroundColor Cyan
-
-# Modificar vite.config.ts para añadir la propiedad 'base'
-$viteConfigPath = "vite.config.ts"
-if (Test-Path $viteConfigPath) {
-    $viteConfigContent = Get-Content $viteConfigPath -Raw
-    if (-not ($viteConfigContent -match 'base:\s*')) {
-        $pattern = '(defineConfig\s*\(\s*{)'
-        $replacement = "$1`n  base: '/$repoName/',"
-        $newViteConfig = $viteConfigContent -replace $pattern, $replacement
-        Set-Content -Path $viteConfigPath -Value $newViteConfig
-        Write-Host "'vite.config.ts' actualizado." -ForegroundColor Green
+# Función para agregar entradas a .gitignore si no existen
+function Add-To-Gitignore {
+    param($Pattern, $ContentToAdd)
+    if (-not ($gitignoreContent | Select-String -Pattern $Pattern -Quiet)) {
+        Write-Host "Agregando '$ContentToAdd' a .gitignore..." -ForegroundColor Magenta
+        Add-Content $gitignorePath "`n$ContentToAdd"
     }
 }
 
-# Modificar package.json para añadir 'homepage' y scripts de despliegue
-$packageJsonPath = "package.json"
-$packageJson = Get-Content $packageJsonPath | ConvertFrom-Json
-$packageJson.homepage = "https://$githubUser.github.io/$repoName"
-if (-not $packageJson.scripts.predeploy) {
-    $packageJson.scripts | Add-Member -MemberType NoteProperty -Name "predeploy" -Value "npm run build"
-    $packageJson.scripts | Add-Member -MemberType NoteProperty -Name "deploy" -Value "gh-pages -d dist"
+Add-To-Gitignore "^\.env\.*" "# Archivos de variables de entorno locales`n.env.*"
+Add-To-Gitignore "^\/node_modules" "# Dependencias de Node`n/node_modules"
+Add-To-Gitignore "^\/dist" "# Directorio de build`n/dist"
+
+Write-Host "✓ .gitignore configurado correctamente." -ForegroundColor Green
+
+
+# --- PASO 3: INSTALACIÓN DE DEPENDENCIAS ---
+Write-Host "`n[Paso 3/7] Instalando dependencias del proyecto y de despliegue..." -ForegroundColor Cyan
+Write-Host "Instalando dependencias del proyecto con 'npm install' (puede tardar)..." -ForegroundColor Gray
+npm install
+
+Write-Host "Instalando 'gh-pages' para el despliegue..." -ForegroundColor Gray
+npm install gh-pages --save-dev
+
+
+# --- PASO 4: CONFIGURACIÓN PARA GITHUB PAGES ---
+Write-Host "`n[Paso 4/7] Configurando 'vite.config' y 'package.json' para el despliegue..." -ForegroundColor Cyan
+
+# Modificar vite.config.ts o vite.config.js para agregar la base correcta
+$viteConfigPath = if (Test-Path "vite.config.ts") { "vite.config.ts" } elseif (Test-Path "vite.config.js") { "vite.config.js" } else { $null }
+
+if ($viteConfigPath) {
+    $viteConfigContent = Get-Content $viteConfigPath -Raw
+    if ($viteConfigContent -notmatch "base:") {
+        $newViteConfig = $viteConfigContent -replace "(export default defineConfig\(\s*{)", "export default defineConfig({`n  base: '/$repoName/',"
+        Set-Content -Path $viteConfigPath -Value $newViteConfig
+        Write-Host "✓ '$viteConfigPath' actualizado con la base '/$repoName/'." -ForegroundColor Green
+    } else {
+        Write-Host "ADVERTENCIA: '$viteConfigPath' ya parece tener una configuración 'base'. Se omitió la modificación." -ForegroundColor Yellow
+    }
+} else {
+    Write-Host "ERROR: No se encontró 'vite.config.ts' ni 'vite.config.js'. No se pudo configurar la base del proyecto." -ForegroundColor Red
+    exit
 }
-$packageJson | ConvertTo-Json -Depth 5 | Set-Content $packageJsonPath
-Write-Host "'package.json' actualizado con 'homepage' y scripts." -ForegroundColor Green
+
+# Modificar package.json para agregar los scripts de despliegue
+$packageJsonPath = Join-Path $projectPath "package.json"
+$packageJson = Get-Content $packageJsonPath | ConvertFrom-Json
+if (-not $packageJson.scripts.deploy) {
+    $packageJson.scripts.predeploy = "npm run build"
+    $packageJson.scripts.deploy = "gh-pages -d dist"
+    $packageJson | ConvertTo-Json -Depth 4 | Set-Content $packageJsonPath
+    Write-Host "✓ 'package.json' actualizado con los scripts 'predeploy' y 'deploy'." -ForegroundColor Green
+} else {
+    Write-Host "ADVERTENCIA: 'package.json' ya parece tener scripts de despliegue. Se omitió la modificación." -ForegroundColor Yellow
+}
 
 
-# --- PASO 5: INICIALIZACIÓN Y COMMIT LOCAL ---
-Write-Host "`n[Paso 5/7] Preparando el repositorio local de Git..." -ForegroundColor Cyan
-git init
-git add .
-git commit -m "Initial commit: Project setup and configuration for GitHub Pages"
-git branch -M main
-Write-Host "Repositorio local inicializado y primer commit creado." -ForegroundColor Green
+# --- PASO 5: INICIALIZACIÓN Y COMMIT EN GIT ---
+Write-Host "`n[Paso 5/7] Preparando el repositorio de Git local..." -ForegroundColor Cyan
+if (-not (Test-Path ".git")) {
+    git init
+    git add .
+    git commit -m "Initial commit: Configuración inicial del proyecto para despliegue"
+    git branch -M main
+    Write-Host "✓ Repositorio Git inicializado y primer commit creado." -ForegroundColor Green
+} else {
+    Write-Host "✓ Repositorio Git ya existente. Omitiendo inicialización." -ForegroundColor Green
+    Write-Host "Por favor, asegúrate de que tus cambios importantes están guardados (commit)." -ForegroundColor Yellow
+    git add .
+    git commit -m "Chore: Configuración para despliegue en GitHub Pages"
+    Write-Host "✓ Cambios de configuración guardados en un nuevo commit." -ForegroundColor Green
+}
 
 
-# --- PASO 6: CREACIÓN, CONEXIÓN Y SUBIDA A GITHUB ---
-Write-Host "`n[Paso 6/7] Subiendo tu código a GitHub..." -ForegroundColor Cyan
+# --- PASO 6: CREACIÓN Y SUBIDA A GITHUB ---
+Write-Host "`n[Paso 6/7] Creando repositorio en GitHub y subiendo el código..." -ForegroundColor Cyan
+Write-Host "Se usará GitHub CLI ('gh'). Si no has iniciado sesión ('gh auth login'), el script podría fallar." -ForegroundColor Yellow
 try {
-    # 1. Crear el repositorio VACÍO en GitHub
-    Write-Host " - Creando repositorio '$repoName' en GitHub..." -ForegroundColor Gray
-    gh repo create "$repoName" --public --source=. --remote=origin --push
-    gh repo create "$repoName" --public
-    
-    # 2. Conectar tu repositorio local con el de GitHub
-    $repoUrl = "https://github.com/$githubUser/$repoName.git"
-    Write-Host " - Conectando el repositorio local al remoto ($repoUrl)..." -ForegroundColor Gray
-    git remote add origin $repoUrl
-    
-    # 3. Subir los archivos a la rama 'main'
-    Write-Host " - Subiendo los archivos a la rama 'main'..." -ForegroundColor Gray
-    git push -u origin main
-
-    Write-Host "¡Código fuente subido a GitHub exitosamente!" -ForegroundColor Green
+    gh repo create $repoName --public --source=. --remote=origin --push
+    Write-Host "✓ ¡Repositorio '$repoName' creado y código subido exitosamente!" -ForegroundColor Green
 }
 catch {
-    Write-Host "ERROR: Ocurrió un problema al subir el código a GitHub." -ForegroundColor Red
-    Write-Host "Posibles causas: Ya existe un repositorio con ese nombre, o problemas de autenticación con 'gh'."
-    Write-Host "Revisa tu conexión y que hayas iniciado sesión con 'gh auth login'." -ForegroundColor Yellow
+    Write-Host "Error al usar GitHub CLI. Asegúrate de tenerlo instalado y de haber iniciado sesión." -ForegroundColor Red
+    Write-Host "Puedes instalarlo desde https://cli.github.com/ y luego ejecutar 'gh auth login'." -ForegroundColor Red
     exit
 }
 
 
-# --- PASO 7: DESPLIEGUE FINAL EN GITHUB PAGES ---
+# --- PASO 7: DESPLIEGUE EN GITHUB PAGES ---
 Write-Host "`n[Paso 7/7] Desplegando el proyecto en GitHub Pages..." -ForegroundColor Cyan
-Write-Host "Ejecutando 'npm run deploy'. Esto compilará el proyecto y lo publicará." -ForegroundColor Gray
+Write-Host "Este proceso ejecutará 'npm run deploy' y puede tardar un momento..." -ForegroundColor Gray
 npm run deploy
 
-Write-Host "`n`n🎉 ¡PROCESO COMPLETADO! 🎉" -ForegroundColor Green
-Write-Host "Tu sitio estará disponible en unos minutos en la siguiente URL:" -ForegroundColor White
-Write-Host "https://$githubUser.github.io/$repoName/" -ForegroundColor Cyan
+Write-Host "`n🎉 ¡Todo listo! 🎉" -ForegroundColor Green
+Write-Host "Tu proyecto ha sido desplegado. En unos minutos, debería estar visible en:" -ForegroundColor Green
+Write-Host "https://$githubUser.github.io/$repoName/" -ForegroundColor White

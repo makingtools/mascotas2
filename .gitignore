@@ -26,7 +26,7 @@ dist-ssr
 # Archivos de variables de entorno locales
 .env.*
 
-# Dependencias
+# Dependencias de Node
 /node_modules
 
 # Directorio de build
