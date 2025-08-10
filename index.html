@@ -23,127 +23,15 @@
     <meta property="twitter:description" content="Diseño interactivo y tecnología de punta para el bienestar de tu mascota.">
     <meta property="twitter:image" content="https://images.unsplash.com/photo-1537151625747-768eb6cf92b2?auto=format&fit=crop&w=1280&q=80">
     
-    <!-- Performance -->
-    <link rel="preload" href="https://images.unsplash.com/photo-1537151625747-768eb6cf92b2?auto=format&fit=crop&w=1920&q=80" as="image">
-
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- TailwindCSS CDN -->
-    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            fontFamily: {
-              sans: ['Poppins', 'sans-serif'],
-            },
-          }
-        }
-      }
-    </script>
-
-    <!-- Custom Styles -->
     <link rel="stylesheet" href="./index.css">
 
-<!-- Structured Data for SEO -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "LocalBusiness",
-  "name": "Pet-Tech Connect",
-  "image": "https://images.unsplash.com/photo-1537151625747-768eb6cf92b2?auto=format&fit=crop&w=1280&q=80",
-  "url": "https://pet-tech-connect.com/",
-  "telephone": "+1-555-PET-TECH",
-  "description": "Pet-Tech Connect es la plataforma líder en cuidado de mascotas, combinando tecnología de punta como autolavado inteligente, escáner de razas por IA y un asistente virtual para ofrecer una experiencia inigualable a dueños y mascotas.",
-  "address": {
-    "@type": "PostalAddress",
-    "streetAddress": "Av. Siempreviva 742",
-    "addressLocality": "Springfield",
-    "addressRegion": "CA",
-    "postalCode": "90210",
-    "addressCountry": "US"
-  },
-  "geo": {
-    "@type": "GeoCoordinates",
-    "latitude": 34.052235,
-    "longitude": -118.243683
-  },
-  "openingHoursSpecification": {
-    "@type": "OpeningHoursSpecification",
-    "dayOfWeek": [
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
-      "Sunday"
-    ],
-    "opens": "00:00",
-    "closes": "23:59"
-  },
-  "priceRange": "$$",
-  "hasOffer": [
-    {
-      "@type": "Offer",
-      "itemOffered": {
-        "@type": "Service",
-        "name": "Autolavado Básico para Perros"
-      }
-    },
-    {
-      "@type": "Offer",
-      "itemOffered": {
-        "@type": "Service",
-        "name": "Tratamiento Premium para Perros"
-      }
-    },
-    {
-      "@type": "Offer",
-      "itemOffered": {
-        "@type": "Service",
-        "name": "Experiencia Spa para Perros"
-      }
-    }
-  ]
-}
-</script>
-
-<!-- 
-  IMPORT MAP PARA TRANSPILACIÓN EN TIEMPO REAL
-  ------------------------------------------------
-  Este import map es la clave para que el proyecto funcione en GitHub Pages sin un paso de compilación.
-  - Usa `esm.sh` para cargar paquetes de npm como React.
-  - CRÍTICO: Remapea todas las importaciones de archivos locales (que empiezan con './') para que se obtengan 
-    del repositorio de GitHub a través de esm.sh. El servicio `esm.sh/gh/...` transpila TypeScript/TSX 
-    al instante y lo sirve con el tipo de contenido (MIME type) de JavaScript correcto, 
-    solucionando así los errores que se veían en GitHub Pages.
-  - ATENCIÓN: La ruta del repositorio 'makingtools/MASCOTAS10@main' está escrita directamente aquí.
-    Si cambias tu nombre de usuario de GitHub, el nombre del repositorio o la rama por defecto,
-    DEBES actualizar esta ruta.
--->
-<script type="importmap">
-{
-  "imports": {
-    "react": "https://esm.sh/react@19.0.0-rc.0",
-    "react-dom/client": "https://esm.sh/react-dom@19.0.0-rc.0/client",
-    "recharts": "https://esm.sh/recharts@3.1.2",
-    "@google/genai": "https://esm.sh/@google/genai@1.13.0",
-    "uuid": "https://esm.sh/uuid@11.1.0",
-    "./": "https://esm.sh/gh/makingtools/MASCOTAS10@main/",
-    "react-dom/": "https://esm.sh/react-dom@^19.1.1/",
-    "react/": "https://esm.sh/react@^19.1.1/"
-  }
-}
-</script>
-<link rel="stylesheet" href="/index.css">
 </head>
 <body>
     <div id="root"></div>
-    <!-- Punto de entrada de la aplicación. Ahora es un módulo estándar, sin necesidad de Babel. -->
-    <script type="module" src="./index.tsx"></script>
-<script type="module" src="/index.tsx"></script>
+    <script type="module" src="/index.tsx"></script>
 </body>
 </html>
