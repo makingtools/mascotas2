@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useI18n, Language, Translations } from '../i18n';
-import { Service, AIFeature, ModalType, AppActions } from '../types';
-import { SERVICES, ART_STYLES, BrandIcon, SparklesIcon, ShowerIcon, PremiumIcon, SpaIcon, ScanIcon, ArtIcon, ChatIcon, TwitterIcon, InstagramIcon, FacebookIcon } from '../constants';
-import * as geminiService from '../services/geminiService';
-import * as speechService from '../speechService';
-import PetCareAssistant from '../components/PetCareAssistant';
+import { useI18n, Language, Translations } from '../i18n.ts';
+import { Service, AIFeature, ModalType, AppActions } from '../types.ts';
+import { SERVICES, ART_STYLES, BrandIcon, SparklesIcon, ShowerIcon, PremiumIcon, SpaIcon, ScanIcon, ArtIcon, ChatIcon, TwitterIcon, InstagramIcon, FacebookIcon } from '../constants.tsx';
+import * as geminiService from '../services/geminiService.ts';
+import * as speechService from '../speechService.ts';
+import PetCareAssistant from '../components/PetCareAssistant.tsx';
 
 // --- Custom Hook for Scroll Animations ---
 const useScrollAnimation = () => {

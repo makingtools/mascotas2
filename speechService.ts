@@ -65,19 +65,30 @@ export const startListening = (lang: Language): Promise<string> => {
             return reject("Speech recognition not supported in this browser.");
         }
         
+        let resolved = false; // Flag to prevent multiple resolutions
+
         recognition.lang = lang;
         
         recognition.onresult = (event) => {
+            if (resolved) return;
+            resolved = true;
             const transcript = event.results[0][0].transcript;
             resolve(transcript);
         };
         
         recognition.onerror = (event) => {
+            if (resolved) return;
+            resolved = true;
             reject(event.error);
         };
         
         recognition.onend = () => {
-            // Automatically resolves if onresult was called, otherwise we might need to handle empty resolves.
+            // This is crucial. If 'onresult' hasn't fired (e.g., no speech detected),
+            // this ensures the promise resolves with an empty string, preventing it from hanging.
+            if (!resolved) {
+                resolved = true;
+                resolve(""); 
+            }
         };
 
         recognition.start();

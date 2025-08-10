@@ -1,6 +1,6 @@
-import { Appointment, User, Client, AppointmentCreationData, CommunicationEntry, Lead, ServicePopularity, TopClient, PeakHour, Provider, Expense, InventoryItem, DashboardUser, UserRole, Promotion } from "../types";
+import { Appointment, User, Client, AppointmentCreationData, CommunicationEntry, Lead, ServicePopularity, TopClient, PeakHour, Provider, Expense, InventoryItem, DashboardUser, UserRole, Promotion } from "../types.ts";
 import { v4 as uuidv4 } from 'uuid';
-import { SERVICES } from "../constants";
+import { SERVICES } from "../constants.tsx";
 
 // --- In-memory database simulation ---
 

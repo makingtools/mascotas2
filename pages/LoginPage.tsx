@@ -1,8 +1,8 @@
 
 
 import React, { useState } from 'react';
-import { useI18n } from '../i18n';
-import { BrandIcon, GoogleIcon } from '../constants';
+import { useI18n } from '../i18n.ts';
+import { BrandIcon, GoogleIcon } from '../constants.tsx';
 
 interface LoginPageProps {
     onLogin: (password: string) => boolean;

@@ -1,30 +1,14 @@
 {
-  "name": "mascotas",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "homepage": "https://<TU-USUARIO-DE-GITHUB>.github.io/mascotas/",
+  "name": "pet-tech-connect",
+  "version": "1.0.0",
+  "description": "Plataforma web de vanguardia que combina servicios de cuidado de mascotas con funcionalidades avanzadas de inteligencia artificial.",
+  "main": "index.js",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "start": "live-server --port=3000"
   },
-  "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
-  },
+  "author": "World-Class Senior Frontend Engineer",
+  "license": "ISC",
   "devDependencies": {
-    "@types/react": "^18.2.79",
-    "@types/react-dom": "^18.2.25",
-    "@vitejs/plugin-react": "^4.2.1",
-    "eslint": "^8.57.0",
-    "eslint-plugin-react": "^7.34.1",
-    "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-react-refresh": "^0.4.6",
-    "gh-pages": "^6.1.1",
-    "vite": "^5.2.10"
+    "live-server": "^1.2.2"
   }
 }

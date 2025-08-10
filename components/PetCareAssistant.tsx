@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ChatMessage, AppActions } from '../types';
-import * as geminiService from '../services/geminiService';
-import * as speechService from '../speechService';
-import { BrandIcon, SparklesIcon } from '../constants';
-import { useI18n, Language } from '../i18n';
+import { ChatMessage, AppActions } from '../types.ts';
+import * as geminiService from '../services/geminiService.ts';
+import * as speechService from '../speechService.ts';
+import { BrandIcon, SparklesIcon } from '../constants.tsx';
+import { useI18n, Language } from '../i18n.ts';
 
 interface PetCareAssistantProps {
     onClose: () => void;

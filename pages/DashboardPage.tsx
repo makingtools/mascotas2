@@ -1,12 +1,12 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { WASH_DATA, TOTAL_WASHES, ALERTS, BrandIcon, ShowerIcon, HomeIcon, UsersIcon, CalendarDaysIcon, ChartBarIcon, Cog6ToothIcon, ArrowLeftOnRectangleIcon, GoogleDriveIcon, GoogleSheetsIcon, GoogleCalendarIcon, SERVICES, DocumentTextIcon, BanknotesIcon, TruckIcon, ReceiptPercentIcon, ArchiveBoxIcon, UserGroupIcon, ChevronDownIcon, ChatBubbleOvalLeftEllipsisIcon, MegaphoneIcon, RocketLaunchIcon } from '../constants';
-import * as db from '../data/mockDB';
-import * as googleAuth from '../googleAuthService';
-import { useI18n, Translations } from '../i18n';
-import { Client, Pet, MedicalRecord, Appointment, PaymentMethod, VoiceOption, GoogleUser, CommunicationEntry, AppointmentCreationData, DashboardView, Lead, ServicePopularity, TopClient, PeakHour, Provider, Expense, InventoryItem, DashboardUser, Promotion } from '../types';
-import PetCareAssistant from '../components/PetCareAssistant';
-import { AppActions } from '../types';
+import { WASH_DATA, TOTAL_WASHES, ALERTS, BrandIcon, ShowerIcon, HomeIcon, UsersIcon, CalendarDaysIcon, ChartBarIcon, Cog6ToothIcon, ArrowLeftOnRectangleIcon, GoogleDriveIcon, GoogleSheetsIcon, GoogleCalendarIcon, SERVICES, DocumentTextIcon, BanknotesIcon, TruckIcon, ReceiptPercentIcon, ArchiveBoxIcon, UserGroupIcon, ChevronDownIcon, ChatBubbleOvalLeftEllipsisIcon, MegaphoneIcon, RocketLaunchIcon } from '../constants.tsx';
+import * as db from '../data/mockDB.ts';
+import * as googleAuth from '../googleAuthService.ts';
+import { useI18n, Translations } from '../i18n.ts';
+import { Client, Pet, MedicalRecord, Appointment, PaymentMethod, VoiceOption, GoogleUser, CommunicationEntry, AppointmentCreationData, DashboardView, Lead, ServicePopularity, TopClient, PeakHour, Provider, Expense, InventoryItem, DashboardUser, Promotion } from '../types.ts';
+import PetCareAssistant from '../components/PetCareAssistant.tsx';
+import { AppActions } from '../types.ts';
 
 // --- Reusable Components ---
 const MetricCard = React.memo(({ title, value, icon, color }: { title: string; value: string | number; icon: React.ReactNode; color: 'green' | 'cyan' | 'indigo' | 'rose' }) => {
@@ -174,7 +174,7 @@ const SummaryView: React.FC = () => {
                                     <GoogleCalendarIcon className="w-5 h-5" />
                                     <span>{t('dashboard.google.sync_calendar')} ({unsyncedCount})</span>
                                 </button>
-                                <button onClick={() => runGoogleAction(googleAuth.backupToDrive)} disabled={!!syncMessage} className="w-full flex items-center justify-center space-x-2 bg-green-500 text-white font-semibold py-2 rounded-lg hover:bg-green-600 transition-colors disabled:bg-green-300">
+                                <button onClick={() => runGoogleAction(googleAuth.backupClientDataToDrive)} disabled={!!syncMessage} className="w-full flex items-center justify-center space-x-2 bg-green-500 text-white font-semibold py-2 rounded-lg hover:bg-green-600 transition-colors disabled:bg-green-300">
                                     <GoogleDriveIcon className="w-5 h-5" />
                                     <span>{t('dashboard.google.backup_drive')}</span>
                                 </button>

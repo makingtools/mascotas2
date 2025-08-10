@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import LandingPage from './pages/LandingPage';
-import DashboardPage from './pages/DashboardPage';
-import LoginPage from './pages/LoginPage';
-import { View, ModalType, AppActions, GoogleUser } from './types';
-import { ADMIN_PASSWORD } from './constants';
-import * as googleAuth from './googleAuthService';
+import LandingPage from './pages/LandingPage.tsx';
+import DashboardPage from './pages/DashboardPage.tsx';
+import LoginPage from './pages/LoginPage.tsx';
+import { View, ModalType, AppActions, GoogleUser } from './types.ts';
+import { ADMIN_PASSWORD } from './constants.tsx';
+import * as googleAuth from './googleAuthService.ts';
 
 const App: React.FC = () => {
   const [view, setView] = useState<View>('public');

@@ -1,6 +1,6 @@
 import { GoogleGenAI, GenerateContentResponse, Chat, Tool, Type, Part } from "@google/genai";
-import * as db from '../data/mockDB';
-import { Appointment, AppointmentCreationData, User, AppActions } from "../types";
+import * as db from '../data/mockDB.ts';
+import { Appointment, AppointmentCreationData, User, AppActions } from "../types.ts";
 
 const API_KEY = process.env.API_KEY;
 if (!API_KEY) console.warn("API_KEY environment variable not set. Gemini API calls will fail.");

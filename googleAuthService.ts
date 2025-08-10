@@ -1,13 +1,28 @@
-import { GoogleUser, Appointment, Client, Lead, Expense } from './types';
-import { Translations } from './i18n';
-import * as db from './data/mockDB';
+import { GoogleUser, Appointment, Client, Lead, Expense } from './types.ts';
+import { Translations } from './i18n.ts';
+import * as db from './data/mockDB.ts';
 
 
-// --- Security Best Practices for Google API Credentials ---
-// These credentials should NEVER be hardcoded in the frontend.
-// They must be loaded from secure environment variables on a backend server.
-// The user has provided credentials, but they will not be used directly here for security.
-// The code below shows where they would be used in a proper backend implementation.
+// ---
+// CRITICAL SECURITY NOTICE FOR DEVELOPERS
+// ---
+// The API credentials (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET) are highly sensitive.
+// They should NEVER be hardcoded or exposed in any frontend code (JavaScript, HTML, etc.).
+//
+// **Correct Implementation:**
+// 1.  The `GOOGLE_CLIENT_ID` can be used in the frontend to initiate the OAuth flow.
+// 2.  The `GOOGLE_CLIENT_SECRET` MUST reside on a secure backend server and nowhere else.
+// 3.  The OAuth 2.0 flow involves redirecting the user to Google. After consent, Google
+//     redirects back to your app with an authorization `code`.
+// 4.  Your frontend sends this `code` to YOUR backend.
+// 5.  Your backend server then securely exchanges the `code`, `CLIENT_ID`, and `CLIENT_SECRET`
+//     with Google's token endpoint to get an `access_token`.
+// 6.  The backend then manages the session for the user.
+//
+// The code below simulates this flow but does not implement a backend for simplicity.
+// The provided user credentials are NOT used and are only referenced in comments
+// to illustrate where they fit in a production-ready architecture.
+//
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID; // e.g., '37344...apps.googleusercontent.com'
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET; // Should ONLY be used on a server.
 
@@ -48,7 +63,7 @@ class GoogleApiClient {
         events: {
             insert: async (calendarId: string, event: any): Promise<any> => {
                 if (!this.isAuthenticated()) throw new Error("401 Unauthorized: Missing Google API Token.");
-                console.log(`[Google API Sim] Inserting event into calendar '${calendarId}':`, event);
+                console.log(`[Google API Sim] POST to calendar.events.insert for calendar '${calendarId}':`, event);
                 await new Promise(res => setTimeout(res, 100)); // Simulate network latency
                 return { status: 'confirmed', htmlLink: `https://calendar.google.com/event?id=${Date.now()}` };
             }
@@ -59,7 +74,7 @@ class GoogleApiClient {
         files: {
             create: async (metadata: any, media: any): Promise<any> => {
                  if (!this.isAuthenticated()) throw new Error("401 Unauthorized: Missing Google API Token.");
-                 console.log(`[Google API Sim] Uploading file to Drive: ${metadata.name}`, { metadata, body: media.body });
+                 console.log(`[Google API Sim] POST to drive.files.create: ${metadata.name}`, { metadata, body: media.body });
                  await new Promise(res => setTimeout(res, 500));
                  return { id: `drive_${Date.now()}`, name: metadata.name };
             }
@@ -70,15 +85,21 @@ class GoogleApiClient {
         spreadsheets: {
             create: async (resource: any): Promise<any> => {
                 if (!this.isAuthenticated()) throw new Error("401 Unauthorized: Missing Google API Token.");
-                console.log(`[Google API Sim] Creating spreadsheet:`, resource);
+                console.log(`[Google API Sim] POST to sheets.spreadsheets.create:`, resource);
                 await new Promise(res => setTimeout(res, 400));
                 const id = `sheet_${Date.now()}`;
                 return { spreadsheetId: id, spreadsheetUrl: `https://docs.google.com/spreadsheets/d/${id}` , properties: { title: resource.properties.title }};
             },
+            batchUpdate: async (spreadsheetId: string, resource: any): Promise<any> => {
+                if (!this.isAuthenticated()) throw new Error("401 Unauthorized: Missing Google API Token.");
+                console.log(`[Google API Sim] POST to sheets.spreadsheets.batchUpdate for sheet ${spreadsheetId} with ${resource.requests.length} requests.`);
+                 await new Promise(res => setTimeout(res, 600));
+                return { spreadsheetId, replies: resource.requests.map(() => ({ addSheet: { properties: { sheetId: Date.now() } } })) };
+            },
             values: {
                 update: async (params: any): Promise<any> => {
                     if (!this.isAuthenticated()) throw new Error("401 Unauthorized: Missing Google API Token.");
-                    console.log(`[Google API Sim] Updating sheet ${params.spreadsheetId} at range ${params.range} with ${params.resource.values.length} rows.`);
+                    console.log(`[Google API Sim] POST to sheets.spreadsheets.values.update for sheet ${params.spreadsheetId} at range ${params.range} with ${params.resource.values.length} rows.`);
                     await new Promise(res => setTimeout(res, 600));
                     return { spreadsheetId: params.spreadsheetId, updatedRows: params.resource.values.length };
                 }
@@ -102,17 +123,9 @@ export const getMockUser = (): GoogleUser => {
 };
 
 export const signIn = (): GoogleUser => {
-    // --- REAL OAUTH 2.0 FLOW SIMULATION ---
-    // 1. A real app would redirect the user to Google's consent screen,
-    //    passing the GOOGLE_CLIENT_ID.
-    // 2. After user consent, Google redirects back to a specified URI with an authorization code.
-    // 3. Your backend server receives this code, and exchanges it for an access token
-    //    by sending the code, GOOGLE_CLIENT_ID, and GOOGLE_CLIENT_SECRET to Google.
-    // 4. The server securely stores the token and sends it to the frontend.
-
-    // This simulation generates a fake token to mimic a successful login.
-    console.log(`[Simulated OAuth] Using placeholder GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}`);
-    console.warn(`[Security Warning] The provided GOOGLE_CLIENT_SECRET is a secret and should ONLY ever be handled by a secure backend server, never in frontend code.`);
+    // This function simulates the final step of a successful OAuth 2.0 flow.
+    console.log(`[Simulated OAuth] Using placeholder GOOGLE_CLIENT_ID to initiate flow.`);
+    console.warn(`[Security Warning] The GOOGLE_CLIENT_SECRET is a secret and should ONLY ever be handled by a secure backend server, never in frontend code.`);
 
     const fakeToken = `fake-token-${Date.now()}`;
     apiClient.setToken(fakeToken);
@@ -164,26 +177,26 @@ export const syncCalendar = async (onProgress: (messageKey: keyof Translations) 
     return { message: `${unsynced.length} cita(s) sincronizada(s) con Google Calendar.` };
 };
 
-export const backupToDrive = async (onProgress: (messageKey: keyof Translations) => void): Promise<{ message: string }> => {
+export const backupClientDataToDrive = async (onProgress: (messageKey: keyof Translations) => void): Promise<{ message: string }> => {
     if (!apiClient.isAuthenticated()) throw new Error("Error: Not authenticated with Google.");
 
-    onProgress('dashboard.google.uploading_backup');
+    const clients = await db.getClients();
+    let uploadedCount = 0;
 
-    const [clients, appointments, leads, expenses] = await Promise.all([
-        db.getClients(), db.getAppointments(), db.getLeads(), db.getExpenses()
-    ]);
-
-    const backupData = JSON.stringify({
-        createdAt: new Date().toISOString(),
-        clients, appointments, leads, expenses,
-    }, null, 2);
-
-    const fileMetadata = { name: `pet-tech-backup-${new Date().toISOString().split('T')[0]}.json` };
-    const media = { mimeType: 'application/json', body: backupData };
-
-    await apiClient.drive.files.create(fileMetadata, media);
+    for (const client of clients) {
+        onProgress('dashboard.google.uploading_client_report'); // This message will flash for each client. Better to have a more specific message if needed.
+        
+        const clientData = JSON.stringify(client, null, 2);
+        const fileName = `reporte-cliente-${client.name.replace(/\s/g, '_')}-${client.id}.json`;
+        
+        const fileMetadata = { name: fileName, parents: ['PET_TECH_CONNECT_REPORTS'] }; // Simulate saving to a specific folder
+        const media = { mimeType: 'application/json', body: clientData };
+        
+        await apiClient.drive.files.create(fileMetadata, media);
+        uploadedCount++;
+    }
     
-    return { message: `Copia de seguridad creada en Google Drive.` };
+    return { message: `${uploadedCount} reportes de clientes guardados en Google Drive.` };
 };
 
 export const exportToSheets = async (onProgress: (messageKey: keyof Translations) => void): Promise<{ message: string }> => {
@@ -194,23 +207,37 @@ export const exportToSheets = async (onProgress: (messageKey: keyof Translations
     const [appointments, clients] = await Promise.all([db.getAppointments(), db.getClients()]);
     
     const spreadsheet = await apiClient.sheets.spreadsheets.create({
-        properties: { title: `Reporte de Citas Pet-Tech - ${new Date().toLocaleDateString()}` }
+        properties: { title: `Reporte de Operaciones Pet-Tech - ${new Date().toLocaleDateString()}` }
     });
     
-    onProgress('dashboard.google.populating_sheet');
-
-    const header = ["ID Cita", "Fecha", "Hora", "Nombre Cliente", "Nombre Mascota", "Servicio", "Estado", "Pago", "Sincronizado"];
-    const rows = appointments.map(app => {
-        const clientName = clients.find(c => c.id === app.clientId)?.name || 'N/A';
-        return [ app.id, app.date, app.time, clientName, app.petName, app.service, app.status, app.paymentStatus, String(app.syncedToGoogle) ];
+    // Create two sheets: "Citas" and "Clientes"
+    await apiClient.sheets.spreadsheets.batchUpdate(spreadsheet.spreadsheetId, {
+        requests: [
+            { addSheet: { properties: { title: "Citas" } } },
+            { addSheet: { properties: { title: "Clientes" } } },
+            { deleteSheet: { sheetId: 0 } } // Delete the default "Sheet1"
+        ]
     });
 
+    onProgress('dashboard.google.writing_appointments');
+    const appointmentHeaders = ["ID Cita", "Fecha", "Hora", "ID Cliente", "Nombre Mascota", "Servicio", "Estado", "Pago", "Sincronizado"];
+    const appointmentRows = appointments.map(app => [ app.id, app.date, app.time, app.clientId, app.petName, app.service, app.status, app.paymentStatus, String(app.syncedToGoogle) ]);
     await apiClient.sheets.spreadsheets.values.update({
         spreadsheetId: spreadsheet.spreadsheetId,
-        range: 'A1',
+        range: 'Citas!A1',
         valueInputOption: 'RAW',
-        resource: { values: [header, ...rows] },
+        resource: { values: [appointmentHeaders, ...appointmentRows] },
     });
 
-    return { message: `${appointments.length} citas exportadas a una nueva hoja de cálculo.` };
+    onProgress('dashboard.google.writing_clients');
+    const clientHeaders = ["ID Cliente", "Nombre", "Email", "Teléfono", "Dirección", "Miembro Desde", "Mascota", "Raza"];
+    const clientRows = clients.map(c => [ c.id, c.name, c.email, c.phone, c.address, c.memberSince, c.pet.name, c.pet.breed ]);
+    await apiClient.sheets.spreadsheets.values.update({
+        spreadsheetId: spreadsheet.spreadsheetId,
+        range: 'Clientes!A1',
+        valueInputOption: 'RAW',
+        resource: { values: [clientHeaders, ...clientRows] },
+    });
+
+    return { message: `${appointments.length} citas y ${clients.length} clientes exportados a una nueva hoja de cálculo.` };
 };
