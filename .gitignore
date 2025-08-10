@@ -25,3 +25,9 @@ dist-ssr
 
 # Archivos de variables de entorno locales
 .env.*
+
+# Dependencias
+/node_modules
+
+# Directorio de build
+/dist
